@@ -72,7 +72,7 @@ func fileExists(name string) (bool, error) {
 }
 
 func run() {
-	var query, sqlString string
+	var query string
 	args := wf.Args()
 	argsLen := len(args)
 
@@ -99,12 +99,17 @@ func run() {
 			wf.NewItem("Remove").Subtitle("remove from database with key 'Shift'").Valid(true)
 		}
 	} else if query != "" {
+		// if argsLen > 1 {
+		// 	sqlString = fmt.Sprintf("select key,value from leo where key LIKE '%%%s%%' and value LIKE '%%%s%%';", query, args[1])
+		// } else {
+		// 	sqlString = fmt.Sprintf("select key,value from leo where key LIKE '%%%s%%' or value LIKE '%%%s%%';", query, query)
+		// }
+		// seven.BuildSQLFeedback(wf, sqlString, db)
 		if argsLen > 1 {
-			sqlString = fmt.Sprintf("select key,value from leo where key LIKE '%%%s%%' and value LIKE '%%%s%%';", query, args[1])
+			seven.BuildQueryFeedback(wf, query, args[1], db)
 		} else {
-			sqlString = fmt.Sprintf("select key,value from leo where key LIKE '%%%s%%' or value LIKE '%%%s%%';", query, query)
+			seven.BuildQueryFeedback(wf, query, "", db)
 		}
-		seven.BuildSQLFeedback(wf, sqlString, db)
 	}
 	// wf.WarnEmpty("No matching!!!", "NO NO NO NO NO NO")
 	if wf.IsEmpty() {
