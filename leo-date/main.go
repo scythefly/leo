@@ -56,6 +56,9 @@ func run() {
 		if intervals < 1 {
 			intervals = 8
 		}
+		if intervals > 32 {
+			intervals = 32
+		}
 		seven.BuildRandomPswdFeedback(wf, intervals)
 	}
 
