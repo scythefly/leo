@@ -49,6 +49,16 @@ func run() {
 		seven.BuildUUIDFeedback(wf)
 	}
 
+	if query == "password" || query == "password " {
+		if argsLen > 1 {
+			intervals, _ = strconv.Atoi(args[1])
+		}
+		if intervals < 1 {
+			intervals = 8
+		}
+		seven.BuildRandomPswdFeedback(wf, intervals)
+	}
+
 	if wf.IsEmpty() {
 		wf.NewItem("ld/lt +/- intervals")
 	}

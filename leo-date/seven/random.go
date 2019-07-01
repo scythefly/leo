@@ -1,9 +1,14 @@
 package seven
 
 import (
+	"math/rand"
+	"time"
+
 	aw "github.com/deanishe/awgo"
 	"github.com/google/uuid"
 )
+
+var bytes = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/*&$")
 
 // BuildUUIDFeedback ...
 func BuildUUIDFeedback(wf *aw.Workflow) {
@@ -16,5 +21,12 @@ func BuildUUIDFeedback(wf *aw.Workflow) {
 }
 
 // BuildRandomPswdFeedback ...
-func BuildRandomPswdFeedback(wf *aw.Workflow, len int) {
+func BuildRandomPswdFeedback(wf *aw.Workflow, length int) {
+	var out []byte
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < length; i++ {
+		out = append(out, bytes[rand.Int()%len(bytes)])
+	}
+	outString := string(out)
+	wf.NewItem("> " + outString).Copytext(outString).Arg(outString).Valid(true)
 }
