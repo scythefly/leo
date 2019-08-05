@@ -62,8 +62,18 @@ func run() {
 		seven.BuildRandomPswdFeedback(wf, intervals)
 	}
 
+	// ip query
+	if query == "ip" || query == "ip " {
+		if argsLen > 1 {
+			seven.BuildIPQueryFeedback(wf, args[1])
+		}
+	}
+
 	if wf.IsEmpty() {
 		wf.NewItem("ld/lt +/- intervals")
+		wf.NewItem("luu -> uuid")
+		wf.NewItem("lp length -> password")
+		wf.NewItem("ip xxx.xxx.xxx.xxx")
 	}
 	wf.SendFeedback()
 }

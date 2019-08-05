@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var bytes = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/*&$")
+var chars = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/!@#$%^&*()")
 
 // BuildUUIDFeedback ...
 func BuildUUIDFeedback(wf *aw.Workflow) {
@@ -25,7 +25,7 @@ func BuildRandomPswdFeedback(wf *aw.Workflow, length int) {
 	var out []byte
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < length; i++ {
-		out = append(out, bytes[rand.Int()%len(bytes)])
+		out = append(out, chars[rand.Int()%len(chars)])
 	}
 	outString := string(out)
 	wf.NewItem("> " + outString).Copytext(outString).Arg(outString).Valid(true)

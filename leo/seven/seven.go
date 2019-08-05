@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	aw "github.com/deanishe/awgo"
-	"github.com/gogf/gf/g/container/gset"
 	"github.com/gogf/gf/g/os/glog"
+	"github.com/scythefly/orb"
 )
 
 // BuildFeedback ...
@@ -31,7 +31,7 @@ func BuildFeedback(wf *aw.Workflow, query string, db *sql.DB) {
 	}
 }
 
-func buildFuzzyQuery(wf *aw.Workflow, arg1, arg2 string, db *sql.DB, s *gset.Set) {
+func buildFuzzyQuery(wf *aw.Workflow, arg1, arg2 string, db *sql.DB, s orb.Set) {
 	var key, value, sqlString string
 	var idx int
 
@@ -81,7 +81,7 @@ func BuildQueryFeedback(wf *aw.Workflow, arg1, arg2 string, db *sql.DB) {
 	i := 0
 	defer rows.Close()
 
-	s := gset.New(true)
+	s := orb.NewSet()
 
 	for rows.Next() && i < 10 {
 		if err = rows.Scan(&idx, &key, &value); err != nil {
