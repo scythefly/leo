@@ -3,15 +3,15 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 
 	aw "github.com/deanishe/awgo"
-	"github.com/gogf/gf/g/os/glog"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/scythefly/leo/leo/seven"
+	"github.com/scythefly/leo/seven"
 )
 
 var (
@@ -30,13 +30,13 @@ func init() {
 	filePath, _ := exec.LookPath(os.Args[0])
 	filePath, _ = filepath.Abs(filePath)
 	filePath = path.Join(filePath, "../leo.db")
-	// glog.Infof(">>> %s\n", filePath)
+	// log.Infof(">>> %s\n", filePath)
 	wf = aw.New(aw.HelpURL(helpURL))
 
 	// filePath := "./leo.db"
 	exists, err := fileExists(filePath)
 	if err != nil {
-		// glog.Infof("check file failed, err: %s\n", err.Error())
+		// log.Infof("check file failed, err: %s\n", err.Error())
 		os.Remove(filePath)
 		exists = false
 	}
@@ -44,20 +44,19 @@ func init() {
 	if !exists {
 		db, err = sql.Open("sqlite3", filePath)
 		if err != nil {
-			glog.Fatalf("cannot open sql, err: %s\n", err.Error())
+			log.Fatalf("cannot open sql, err: %s\n", err.Error())
 			return
 		}
-		sqlString := `
-		create table leo(id integer not null primary key, key text, value text not null, unique(key, value));`
+		sqlString := `create table leo(id integer not null primary key, key text, value text not null, unique(key, value));`
 		_, err = db.Exec(sqlString)
 		if err != nil {
-			glog.Fatalf("create table failed, err: %s\n", err.Error())
+			log.Fatalf("create table failed, err: %s\n", err.Error())
 			return
 		}
 	} else {
 		db, err = sql.Open("sqlite3", filePath)
 		if err != nil {
-			glog.Fatalf("cannot open sql, err: %s\n", err.Error())
+			log.Fatalf("cannot open sql, err: %s\n", err.Error())
 			return
 		}
 	}

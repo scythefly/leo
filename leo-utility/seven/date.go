@@ -5,6 +5,7 @@ import (
 	"time"
 
 	aw "github.com/deanishe/awgo"
+	"github.com/scythefly/orb/onet"
 )
 
 // BuildDateFeedback ...
@@ -27,4 +28,16 @@ func BuildTimeStringFeedback(wf *aw.Workflow, tm int) {
 		title := t.Format("2006-01-02 15:04:05")
 		wf.NewItem("> " + title).Copytext(title).Arg(title).Valid(true)
 	}
+}
+
+// BuildVpnExportFeedback ...
+func BuildVpnExportFeedback(wf *aw.Workflow) {
+	// export http_proxy=http://127.0.0.1:1087;export https_proxy=http://127.0.0.1:1087;
+	ipString, err := onet.GetCurrentIP()
+	if err != nil {
+		wf.NewItem("> failed to get current ip")
+		return
+	}
+	outString := fmt.Sprintf("export http_proxy=http://%s:1087;export https_proxy=http://%s:1087;", ipString, ipString)
+	wf.NewItem("> " + outString).Copytext(outString).Arg(outString).Valid(true)
 }

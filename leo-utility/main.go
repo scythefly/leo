@@ -4,7 +4,8 @@ import (
 	"strconv"
 
 	aw "github.com/deanishe/awgo"
-	"github.com/scythefly/leo/leo-date/seven"
+
+	"leo-utility/seven"
 )
 
 var (
@@ -66,6 +67,36 @@ func run() {
 	if query == "ip" || query == "ip " {
 		if argsLen > 1 {
 			seven.BuildIPQueryFeedback(wf, args[1])
+		}
+	}
+
+	// vpn export
+	if query == "vpn" || query == "vpn " {
+		seven.BuildVpnExportFeedback(wf)
+	}
+
+	// ping
+	if query == "ping" || query == "ping " {
+		if argsLen > 2 {
+			seven.BuildTcpingFeedback(wf, args[1], args[2])
+		} else if argsLen > 1 {
+			seven.BuildPingFeedback(wf, args[1])
+		}
+	}
+
+	if query == "comments" || query == "comments " {
+		if argsLen > 1 {
+			seven.BuildCommentsFeedback(wf, args[1])
+		} else {
+			seven.BuildCommentsFeedback(wf, "-")
+		}
+	}
+
+	if query == "ide" || query == "ide " {
+		if argsLen > 2 {
+			seven.BuildIDEFeedback(wf, args[1], args[2])
+		} else if argsLen > 1 {
+			seven.BuildIDEFeedback(wf, args[1], "-")
 		}
 	}
 

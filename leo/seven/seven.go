@@ -3,9 +3,9 @@ package seven
 import (
 	"database/sql"
 	"fmt"
+	"log"
 
 	aw "github.com/deanishe/awgo"
-	"github.com/gogf/gf/g/os/glog"
 	"github.com/scythefly/orb"
 )
 
@@ -15,7 +15,7 @@ func BuildFeedback(wf *aw.Workflow, query string, db *sql.DB) {
 	var key, value string
 	rows, err := db.Query(sqlString)
 	if err != nil {
-		glog.Infof("query failed, err: %s\n", err.Error())
+		log.Printf("query failed, err: %s\n", err.Error())
 		return
 	}
 	i := 0
@@ -23,7 +23,7 @@ func BuildFeedback(wf *aw.Workflow, query string, db *sql.DB) {
 
 	for rows.Next() && i < 10 {
 		if err = rows.Scan(&key, &value); err != nil {
-			glog.Infof("read data failed, err: %s\n", err.Error())
+			log.Printf("read data failed, err: %s\n", err.Error())
 			return
 		}
 		wf.NewItem("> " + value).Subtitle(fmt.Sprintf("%s -> %s", key, value)).Copytext(value).Arg(value).Valid(true)
@@ -136,7 +136,7 @@ func BuildRmFeedback(wf *aw.Workflow, query string, db *sql.DB) {
 
 	for rows.Next() && i < 10 {
 		if err = rows.Scan(&id, &key, &value); err != nil {
-			glog.Infof("read data failed, err: %s\n", err.Error())
+			log.Printf("read data failed, err: %s\n", err.Error())
 			wf.NewItem("Error").Subtitle(err.Error()).Valid(true)
 			return
 		}
