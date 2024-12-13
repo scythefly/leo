@@ -72,7 +72,11 @@ func run() {
 
 	// vpn export
 	if query == "vpn" || query == "vpn " {
-		seven.BuildVpnExportFeedback(wf)
+		if argsLen > 1 {
+			seven.BuildVpnExportFeedback(wf, args[1])
+		} else {
+			seven.BuildVpnExportFeedback(wf, "")
+		}
 	}
 
 	// ping
@@ -97,6 +101,30 @@ func run() {
 			seven.BuildIDEFeedback(wf, args[1], args[2])
 		} else if argsLen > 1 {
 			seven.BuildIDEFeedback(wf, args[1], "-")
+		}
+	}
+
+	if query == "command" || query == "command " {
+		if argsLen > 2 {
+			p := args[2:]
+			seven.BuildCommandFeedback(wf, args[1], p...)
+		} else {
+			wf.NewItem("go on inputing...")
+		}
+	}
+
+	if query == "proxy" || query == "proxy " {
+		if argsLen > 1 {
+			if args[1] == "start" || args[1] == "stop" {
+				wf.NewItem("> local trojan " + args[1]).Arg(args[1]).Valid(true)
+			} else if args[1] == "global" ||
+				args[1] == "pac" || args[1] == "manual" {
+				wf.NewItem("> set proxy model to " + args[1]).Arg(args[1]).Valid(true)
+			} else {
+				wf.NewItem("start - stop - global - pac - manual")
+			}
+		} else {
+			wf.NewItem("start - stop - global - pac - manual")
 		}
 	}
 

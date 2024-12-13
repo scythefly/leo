@@ -2,10 +2,11 @@ package seven
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	aw "github.com/deanishe/awgo"
-	"github.com/scythefly/orb/onet"
+	"github.com/kakami/pkg/net"
 )
 
 // BuildDateFeedback ...
@@ -31,13 +32,20 @@ func BuildTimeStringFeedback(wf *aw.Workflow, tm int) {
 }
 
 // BuildVpnExportFeedback ...
-func BuildVpnExportFeedback(wf *aw.Workflow) {
-	// export http_proxy=http://127.0.0.1:1087;export https_proxy=http://127.0.0.1:1087;
-	ipString, err := onet.GetCurrentIP()
+func BuildVpnExportFeedback(wf *aw.Workflow, mark string) {
+	// export http_proxy=http://127.0.0.1:1081;export https_proxy=http://127.0.0.1:1081;
+	ips, err := net.CurrentIP()
 	if err != nil {
 		wf.NewItem("> failed to get current ip")
 		return
 	}
-	outString := fmt.Sprintf("export http_proxy=http://%s:1087;export https_proxy=http://%s:1087;", ipString, ipString)
-	wf.NewItem("> " + outString).Copytext(outString).Arg(outString).Valid(true)
+	var ipss []string
+	ipss = append(ipss, "127.0.0.1")
+	ipss = append(ipss, ips...)
+	for idx := range ipss {
+		if mark == "" || strings.Index(ipss[idx], mark) >= 0 {
+			outString := fmt.Sprintf("export http_proxy=http://%s:1081;export https_proxy=http://%s:1081;", ipss[idx], ipss[idx])
+			wf.NewItem("> " + outString).Copytext(outString).Arg(outString).Valid(true)
+		}
+	}
 }
