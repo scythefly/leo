@@ -1,6 +1,7 @@
 package seven
 
 import (
+    "encoding/json"
     "encoding/xml"
     "fmt"
     "io"
@@ -63,6 +64,72 @@ func BuildIDEFeedback(wf *aw.Workflow, path, project string) {
             if strings.Index(projectName, project) >= 0 || project == "-" {
                 ppath := reg.ReplaceAllString(entry.Key, "/Users/iuz${1}")
                 wf.NewItem("> open " + projectName).Subtitle(ppath).Arg(ppath).Valid(true)
+            }
+        }
+    }
+}
+
+type Storage struct {
+    LastKnownMenubarData LastKnownMenubarData `json:"lastKnownMenubarData"`
+}
+
+type LastKnownMenubarData struct {
+    Menus Menus `json:"menus"`
+}
+
+type Menus struct {
+    File File `json:"file"`
+}
+
+type File struct {
+    Items []Item `json:"items"`
+}
+
+type Item struct {
+    ID      string  `json:"id"`
+    Label   string  `json:"label"`
+    Submenu Submenu `json:"submenu"`
+}
+
+type Submenu struct {
+    Items []SItem `json:"items"`
+}
+
+type SItem struct {
+    ID      string `json:"id"`
+    Label   string `json:"label"`
+    Enabled bool   `json:"enabled"`
+    Uri     Uri    `json:"uri"`
+}
+
+type Uri struct {
+    Path string `json:"path"`
+}
+
+func BuildCodeFeedback(wf *aw.Workflow, path, project string) {
+    file, err := os.Open(path)
+    if err != nil {
+        wf.NewItem(fmt.Sprintf("> failed to open recent projects file %s", path))
+        return
+    }
+    defer file.Close()
+    decoder := json.NewDecoder(file)
+    var storage Storage
+    if err = decoder.Decode(&storage); err != nil {
+        wf.NewItem("> decode json file error")
+        return
+    }
+    items := storage.LastKnownMenubarData.Menus.File.Items
+    for idx := range items {
+        if items[idx].Label == "Open &&Recent" {
+            subs := items[idx].Submenu.Items
+            for i := range subs {
+                if subs[i].Enabled && subs[i].ID == "openRecentFolder" {
+                    if project != "-" && strings.Index(subs[i].Label, project) < 0 {
+                        continue
+                    }
+                    wf.NewItem("> open " + subs[i].Label).Subtitle(subs[i].Uri.Path).Arg(subs[i].Uri.Path).Valid(true)
+                }
             }
         }
     }
