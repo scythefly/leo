@@ -9,6 +9,7 @@ func Command() *cobra.Command {
 
 	cmd.AddCommand(
 		dateCommand(),
+		ipCommand(),
 		randomCommand(),
 	)
 
