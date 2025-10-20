@@ -2,6 +2,7 @@ package main
 
 import (
 	"leo/cmd/leoctl/backend"
+	"leo/cmd/leoctl/ide"
 	"leo/cmd/leoctl/snippet"
 	"leo/cmd/leoctl/util"
 	"leo/internal/pb"
@@ -23,6 +24,7 @@ func init() {
 	pb.Wf = aw.New()
 	_rootCmd.AddCommand(
 		backend.Command(),
+		ide.Command(),
 		util.Command(),
 		snippet.Command(),
 	)

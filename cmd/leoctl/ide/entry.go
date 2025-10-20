@@ -3,11 +3,20 @@ package ide
 import (
 	"encoding/json"
 	"fmt"
+	"leo/internal/pb"
 	"os"
 	"strings"
 
-	aw "github.com/deanishe/awgo"
+	"github.com/spf13/cobra"
 )
+
+func Command() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "ide",
+		Run: ideRun,
+	}
+	return cmd
+}
 
 type Storage struct {
 	LastKnownMenubarData LastKnownMenubarData `json:"lastKnownMenubarData"`
@@ -42,18 +51,17 @@ type Uri struct {
 	External string `json:"external"`
 }
 
-func BuildFeedback(wf *aw.Workflow) {
-	// args[1] path
-	// args[2] project
-	args := wf.Args()
-	if len(args) < 3 || args[2] == "" {
-		wf.NewItem("code $project").Valid(false)
+func ideRun(_ *cobra.Command, args []string) {
+	// args[0] path
+	// args[1] project
+	if len(args) < 2 || args[1] == "" {
+		pb.Wf.NewItem("code $project").Valid(false)
 		return
 	}
 
-	file, err := os.Open(args[1])
+	file, err := os.Open(args[0])
 	if err != nil {
-		wf.NewItem(fmt.Sprintf("> failed to open recent projects file %s", args[1])).Valid(false)
+		pb.Wf.NewItem(fmt.Sprintf("> failed to open recent projects file %s", args[0])).Valid(false)
 		return
 	}
 	defer file.Close()
@@ -61,7 +69,7 @@ func BuildFeedback(wf *aw.Workflow) {
 
 	var storage Storage
 	if err = decoder.Decode(&storage); err != nil {
-		wf.NewItem(fmt.Sprintf("> failed to decode recent projects file %s", args[1])).Valid(false)
+		pb.Wf.NewItem(fmt.Sprintf("> failed to decode recent projects file %s", args[0])).Valid(false)
 		return
 	}
 
@@ -86,13 +94,13 @@ func BuildFeedback(wf *aw.Workflow) {
 			fname = title[index+1:]
 		}
 
-		if !strings.Contains(fname, args[2]) {
+		if !strings.Contains(fname, args[1]) {
 			continue
 		}
 
 		if subItems[idx].Uri.External != "" {
 			title = subItems[idx].Uri.External
 		}
-		wf.NewItem("> open " + fname).Subtitle(title).Arg(title).Valid(true)
+		pb.Wf.NewItem("> open " + fname).Subtitle(title).Arg(title).Valid(true)
 	}
 }
