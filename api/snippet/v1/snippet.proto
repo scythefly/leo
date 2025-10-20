@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package api.router.v1;
+
+option go_package = "leo/api/snippet/v1;snippet";
+option java_multiple_files = true;
+option java_package = "api.live.v1";
+
+service Snippet {
+    rpc Query(Request) returns (Response);
+    rpc Put(Request) returns (Response);
+    rpc Delete(Request) returns (Response);
+}
+
+message Request {
+    string key = 1;
+    string value = 2;
+}
+
+message Response {
+    message Pair {
+        string key = 1;
+        string value = 2;
+    }
+    repeated Pair pairs = 1;
+    int32 code = 2;
+    string message = 3;
+}

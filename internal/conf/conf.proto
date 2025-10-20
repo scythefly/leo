@@ -1,0 +1,18 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "leo/internal/conf;conf";
+
+
+message Bootstrap {
+  Data data = 1;
+}
+
+message Data {
+  message Database {
+    string driver = 1;
+    string source = 2;
+  }
+
+  Database database = 1;
+}
