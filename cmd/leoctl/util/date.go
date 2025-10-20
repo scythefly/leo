@@ -9,11 +9,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type option struct {
+var _dateOption struct {
 	unix bool
 }
-
-var _opt option
 
 func dateCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -46,7 +44,7 @@ func dateCommand() *cobra.Command {
 				}
 			}
 			pb.Wf.Rerun(1)
-			if _opt.unix {
+			if _dateOption.unix {
 				title := fmt.Sprintf("%d", t.Unix())
 				pb.Wf.NewItem("> " + title).Subtitle(t.Format(time.DateTime)).Copytext(title).Arg(title).Valid(true)
 			} else {
@@ -57,7 +55,7 @@ func dateCommand() *cobra.Command {
 	}
 
 	flags := cmd.PersistentFlags()
-	flags.BoolVar(&_opt.unix, "unix", false, "Use unix timestamp")
+	flags.BoolVar(&_dateOption.unix, "unix", false, "Use unix timestamp")
 
 	return cmd
 }
