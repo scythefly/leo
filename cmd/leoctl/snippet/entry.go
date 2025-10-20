@@ -1,100 +1,101 @@
 package snippet
 
 import (
-	"context"
 	"fmt"
-	"leo/api/snippet/v1"
-	"os"
+	"leo/internal/biz/snippet"
+	"leo/internal/pb"
 
-	aw "github.com/deanishe/awgo"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"github.com/spf13/cobra"
 )
 
-func BuildFeedback(wf *aw.Workflow) {
-	args := wf.Args()
-	if len(args) < 2 {
-		wf.NewItem("please input a keyword, or add/rm").Valid(false)
+func Command() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "snippet",
+		Run: query,
+	}
+	cmd.AddCommand(
+		addCommand(),
+		rmCommand(),
+	)
+
+	return cmd
+}
+
+func query(_ *cobra.Command, args []string) {
+	if len(args) < 1 {
+		pb.Wf.NewItem("query with keyword, or add/rm").Valid(false)
+		return
+	}
+	var key, value string
+	key = args[0]
+	if len(args) > 1 {
+		value = args[1]
+	}
+	pairs := snippet.Query(key, value)
+	if len(pairs) == 0 {
+		pb.Wf.NewItem("no snippet found").Valid(false)
 		return
 	}
 
-	switch args[1] {
-	case "add":
-		it := wf.NewItem("Add ")
-		it.Subtitle("insert value to db with key 'Shift'").Valid(false)
-		if len(args) > 3 {
-			it.Arg(fmt.Sprintf("snippet add %s %s", args[2], args[3]))
-			it.NewModifier("shift").Subtitle(fmt.Sprintf("add %s -> %s", args[2], args[3])).Valid(true)
-		} else if len(args) > 2 {
-			it.Arg(fmt.Sprintf("snippet add %s ", args[2]))
-			it.NewModifier("shift").Subtitle(fmt.Sprintf("add %s -> %s", args[2], args[2])).Valid(true)
-		}
-	case "rm":
-		if len(args) > 2 {
-			buildRm(wf, args[2])
-		} else {
-			wf.NewItem("Remove").Subtitle("remove from db with key 'Shift'").Valid(false)
-		}
-	}
-
-	req := &snippet.Request{
-		Key: args[1],
-	}
-	if len(args) > 2 {
-		req.Value = args[2]
-	}
-
-	resp, err := client().Query(context.Background(), req)
-	if err != nil {
-		wf.NewItem("error: " + err.Error()).Valid(false)
-		return
-	}
-
-	for _, pair := range resp.GetPairs() {
-		wf.NewItem("> " + pair.Value).Subtitle(fmt.Sprintf("%s -> %s", pair.Key, pair.Value)).
+	for _, pair := range pairs {
+		pb.Wf.NewItem("> " + pair.Value).
+			Subtitle(fmt.Sprintf("%s -> %s", pair.Key, pair.Value)).
 			Copytext(pair.Value).Arg(pair.Value).Valid(true)
 	}
 }
 
-func buildRm(wf *aw.Workflow, key string) {
-	pattern := "%" + key + "%"
-	req := &snippet.Request{
-		Key: pattern,
+func addCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "add",
+		Run: add,
 	}
-	resp, err := client().Query(context.Background(), req)
-	if err != nil {
-		wf.NewItem("error: " + err.Error()).Valid(false)
+
+	return cmd
+}
+
+func add(_ *cobra.Command, args []string) {
+	it := pb.Wf.NewItem("Add ")
+	if len(args) < 1 {
+		it.Subtitle("insert value to db with key 'Shift'").Valid(false)
 		return
 	}
 
-	for _, pair := range resp.GetPairs() {
-		it := wf.NewItem("Remove")
+	key := args[0]
+	value := key
+	if len(args) > 1 {
+		value = args[1]
+	}
+
+	it.Arg(fmt.Sprintf("snippet add %s %s", key, value))
+	it.NewModifier("shift").Subtitle(fmt.Sprintf("add %s -> %s", key, value)).Valid(true)
+}
+
+func rmCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "rm",
+		Run: rm,
+	}
+
+	return cmd
+}
+
+func rm(_ *cobra.Command, args []string) {
+	if len(args) < 1 {
+		it := pb.Wf.NewItem("Remove ")
+		it.Subtitle("remove from db with key 'Shift'").Valid(false)
+		return
+	}
+	var value string
+	if len(args) > 1 {
+		value = args[1]
+	}
+
+	pairs := snippet.Query(args[0], value)
+
+	for _, pair := range pairs {
+		it := pb.Wf.NewItem("Remove")
 		it.Arg(fmt.Sprintf("snippet rm %s %s", pair.Key, pair.Value)).
 			Subtitle(fmt.Sprintf("remove %s -> %s", pair.Key, pair.Value)).Valid(true)
-		it.NewModifier("shift").Subtitle(fmt.Sprintf("do remove %s -> %s", pair.Key, pair.Value))
+		it.NewModifier("shift").Subtitle(fmt.Sprintf("do remove %s -> %s", pair.Key, pair.Value)).Valid(true)
 	}
-}
-
-func Add(key, value string) {
-	client().Put(context.Background(), &snippet.Request{
-		Key:   key,
-		Value: value,
-	})
-}
-
-func Rm(key, value string) {
-	client().Delete(context.Background(), &snippet.Request{
-		Key:   key,
-		Value: value,
-	})
-}
-
-func client() snippet.SnippetClient {
-	dir, _ := os.UserHomeDir()
-	socketPath := dir + "/.peon/leo.sock"
-	conn, err := grpc.NewClient("unix://"+socketPath, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		panic(err)
-	}
-	return snippet.NewSnippetClient(conn)
 }
