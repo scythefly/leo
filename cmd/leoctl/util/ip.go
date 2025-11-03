@@ -7,15 +7,23 @@ import (
 	"net"
 
 	"github.com/kakami/pkg/convert"
+	knet "github.com/kakami/pkg/net"
 	"github.com/spf13/cobra"
 	"github.com/valyala/fasthttp"
 )
+
+var _ipOption struct {
+	proxy bool
+}
 
 func ipCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "ip",
 		Run: ipToLocation,
 	}
+
+	flags := cmd.PersistentFlags()
+	flags.BoolVar(&_ipOption.proxy, "proxy", false, "do proxy")
 
 	return cmd
 }
@@ -40,6 +48,11 @@ type ipAPI struct {
 var client *fasthttp.Client
 
 func ipToLocation(_ *cobra.Command, args []string) {
+	if _ipOption.proxy {
+		buildProxy(args)
+		return
+	}
+
 	var err error
 	if len(args) < 1 {
 		pb.Wf.NewItem("> ip xxx.xxx.xxx.xxx")
@@ -125,4 +138,24 @@ func useAPI(ip string) {
 	}
 
 	pb.Wf.NewItem("> " + ipA.Country + "," + ipA.City)
+}
+
+func buildProxy(args []string) {
+	ips, err := knet.LocalInterfaces()
+	if err != nil || len(ips) == 0 {
+		pb.Wf.NewItem("> failed to get local interfaces")
+		return
+	}
+
+	port := "1082"
+	if len(args) > 0 {
+		port = args[0]
+	}
+	ipss := []string{"127.0.0.1"}
+	ipss = append(ipss, ips...)
+
+	for idx := range ipss {
+		title := fmt.Sprintf("export http_proxy=http://%s:%s;export https_proxy=http://%s:%s", ipss[idx], port, ipss[idx], port)
+		pb.Wf.NewItem("> " + title).Copytext(title).Arg(title).Valid(true)
+	}
 }
