@@ -2,8 +2,10 @@ package snippet
 
 import (
 	"fmt"
+	v1 "leo/api/snippet/v1"
 	"leo/internal/biz/snippet"
 	"leo/internal/pb"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -37,7 +39,21 @@ func query(_ *cobra.Command, args []string) {
 		return
 	}
 
+	var pairs1, pairs2 []*v1.Response_Pair
 	for _, pair := range pairs {
+		if strings.Index(pair.Key, key) == 0 {
+			pairs1 = append(pairs1, pair)
+		} else {
+			pairs2 = append(pairs2, pair)
+		}
+	}
+
+	for _, pair := range pairs1 {
+		pb.Wf.NewItem("> " + pair.Value).
+			Subtitle(fmt.Sprintf("%s -> %s", pair.Key, pair.Value)).
+			Copytext(pair.Value).Arg(pair.Value).Valid(true)
+	}
+	for _, pair := range pairs2 {
 		pb.Wf.NewItem("> " + pair.Value).
 			Subtitle(fmt.Sprintf("%s -> %s", pair.Key, pair.Value)).
 			Copytext(pair.Value).Arg(pair.Value).Valid(true)
