@@ -147,7 +147,7 @@ func buildProxy(args []string) {
 		return
 	}
 
-	port := "1082"
+	port := "18082"
 	if len(args) > 0 {
 		port = args[0]
 	}

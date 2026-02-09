@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"leo/internal/pb"
+	"net/url"
 	"os"
 	"strings"
 
@@ -47,8 +48,10 @@ type SubItem struct {
 }
 
 type Uri struct {
-	Path     string `json:"path"`
-	External string `json:"external"`
+	Path      string `json:"path"`
+	External  string `json:"external"`
+	Scheme    string `json:"scheme"`
+	Authority string `json:"authority"`
 }
 
 func ideRun(_ *cobra.Command, args []string) {
@@ -98,8 +101,16 @@ func ideRun(_ *cobra.Command, args []string) {
 			continue
 		}
 
-		if subItems[idx].Uri.External != "" {
-			title = subItems[idx].Uri.External
+		// "vscode-remote://ssh-remote%2Bubuntu01/root/work/friday/LibreChat"
+		uri := &subItems[idx].Uri
+		if uri.External != "" {
+			title = uri.External
+		} else if uri.Scheme == "vscode-remote" {
+			title = fmt.Sprintf("%s://%s%s",
+				uri.Scheme,
+				url.QueryEscape(uri.Authority),
+				uri.Path,
+			)
 		}
 		pb.Wf.NewItem("> open " + fname).Subtitle(title).Arg(title).Valid(true)
 	}
